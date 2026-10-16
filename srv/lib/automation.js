@@ -223,8 +223,9 @@ export async function runDailyExpiryJob({ actor = 'system-expiry-job' } = {}) {
 
 export async function processIntegrationOutbox() {
   const result = { status: 'Succeeded', message: 'Integration outbox processed.', certificatesExpired: 0, notificationsQueued: 0, integrationQueued: 0, integrationProcessed: 0 };
-  const live = String(process.env.S4_SYNC_MODE || 'dry-run').toLowerCase() === 'live';
-  const statuses = live ? ['Pending', 'Failed', 'NotLinked', 'DryRun'] : ['Pending', 'Failed'];
+  const syncMode = String(process.env.S4_SYNC_MODE || ((process.env.S4_BACKEND_MODE || 'mock').toLowerCase() === 'mock' ? 'mock' : 'dry-run')).toLowerCase();
+  const syncingEnabled = syncMode === 'live' || syncMode === 'mock';
+  const statuses = syncingEnabled ? ['Pending', 'Failed', 'NotLinked', 'DryRun'] : ['Pending', 'Failed'];
   const candidates = await cds.db.run(
     SELECT.from('cc.bbbee.IntegrationOutbox')
       .where({ status: { in: statuses } })
@@ -267,14 +268,14 @@ export async function processIntegrationOutbox() {
       const message = String(error?.message ?? 'Unknown integration error').slice(0, 1000);
       await cds.db.run(UPDATE('cc.bbbee.IntegrationOutbox').set({ status: 'Failed', lastError: message }).where({ idempotencyKey: item.idempotencyKey }));
       await cds.db.run(UPDATE('cc.bbbee.Suppliers').set({ s4SyncStatus: 'Failed', s4SyncMessage: message.slice(0, 500) }).where({ ID: item.supplier_ID }));
-      log.error(`S/4 outbox event ${item.idempotencyKey} failed: ${message}`);
+      log.error(`Business Partner outbox event ${item.idempotencyKey} failed: ${message}`);
     }
   }
   if (failures) {
     result.status = 'PartialFailure';
     result.message = `Processed ${result.integrationProcessed} S/4 event(s); ${failures} failed and remain available for retry.`;
   } else {
-    result.message = `Processed ${result.integrationProcessed} S/4 event(s). Mode: ${live ? 'live' : 'dry-run'}.`;
+    result.message = `Processed ${result.integrationProcessed} integration event(s). Mode: ${syncMode}.`;
   }
   return result;
 }

@@ -52,7 +52,6 @@ type OnboardingStatus : String enum {
 entity Suppliers : cuid, managed {
     @readonly
     businessPartnerId       : String(10);
-    // IAS/XSUAA subject that owns this supplier record. Set by the backend, never trusted from client input.
     identitySubject          : String(255);
     @readonly
     s4SyncStatus             : String(20) not null default 'NotLinked';
@@ -171,9 +170,6 @@ annotate Certificates.attachments with {
     ];
 };
 
-
-// Transactional outbox for reliable and idempotent S/4HANA write-back.
-// The stable key is the primary key so an approval/expiry can only be queued once.
 entity IntegrationOutbox : managed {
     key idempotencyKey : String(255);
     eventType          : String(40) not null;
@@ -215,4 +211,24 @@ entity ExpiryJobRuns : managed {
     runToken            : String(36);
     finishedAt          : Timestamp;
     errorMessage        : String(1000);
+}
+
+// Explicit simulation of the external S/4HANA Business Partner master for demos.
+// This data is local to this CAP application and is NOT a real SAP ERP system.
+// It is only used when S4_BACKEND_MODE=mock.
+entity MockBusinessPartners : managed {
+    key businessPartnerId  : String(10);
+    companyName             : String(100) not null;
+    taxNumber               : String(10);
+    registrationNumber      : String(20);
+    beeLevel                : Integer;
+    recognitionFactor       : Decimal(5,2);
+    certificateExpiry       : Date;
+    enterpriseType          : String(3);
+    complianceStatus        : String(20) not null default 'Unknown';
+    blackOwnership          : Decimal(5,2);
+    blackWomenOwnership    : Decimal(5,2);
+    lastSyncAt              : Timestamp;
+    lastIdempotencyKey      : String(255);
+    lastSyncPayload         : LargeString;
 }

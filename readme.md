@@ -45,4 +45,7 @@ For MTA packaging, run the standard MTA build after the CAP build dependencies a
 
 ## Live integrations
 
-S/4HANA writes default to **dry-run**. Do not switch `S4_SYNC_MODE=live` until the `S4HANA_BUSINESS_PARTNER` destination and real B-BBEE extension field names exist in the target system. Live notifications likewise require a configured HTTPS `BB_BEE_NOTIFICATION_SERVICE` adapter. Review `IMPLEMENTATION_NOTES.md` before deploying to BTP; actual tenant destinations, field mapping, IAS trust, role collections, and HANA Cloud entitlements must be supplied by the deployment owner.
+The application defaults to a **local mock Business Partner registry** (`S4_BACKEND_MODE=mock`, `S4_SYNC_MODE=mock`) so you can demonstrate matching, approvals, expiry and compliance write-back without owning an S/4HANA system. The simulated BPs are local demo records, not SAP tenant data. Use SAP Business Accelerator Hub to inspect and try the official API contract if useful, but do not depend on Hub sandbox data for persistent application write-back. Only set `S4_BACKEND_MODE=destination` and `S4_SYNC_MODE=live` if a real S/4HANA tenant and verified B-BBEE extension fields become available. `BEE_NOTIFICATION_MODE=log` records notifications but does not send email. Review `IMPLEMENTATION_NOTES.md` for the demo and deployment configuration.
+
+
+For BTP demo deployment, the service module in `mta.yaml` defaults to `S4_BACKEND_MODE=mock`, `S4_SYNC_MODE=mock`, and `BEE_NOTIFICATION_MODE=log`. You do not need an S/4HANA destination or SAP Business Accelerator Hub key for the app to simulate Business Partner matching and compliance updates. You still need the Azure OCR destination if you want live OCR in the deployed environment.

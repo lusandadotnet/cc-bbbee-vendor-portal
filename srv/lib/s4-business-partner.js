@@ -1,5 +1,28 @@
+import cds from '@sap/cds';
 import { getDestination } from '@sap-cloud-sdk/connectivity';
 import { executeHttpRequest } from '@sap-cloud-sdk/http-client';
+import { matchMockBusinessPartner, buildMockComplianceUpdate } from './mock-s4-rules.js';
+
+const { SELECT, UPDATE } = cds.ql;
+
+function getBackendMode() {
+  const mode = String(process.env.S4_BACKEND_MODE || 'mock').trim().toLowerCase();
+  if (!['mock', 'destination'].includes(mode)) {
+    throw new Error('S4_BACKEND_MODE must be mock or destination.');
+  }
+  return mode;
+}
+
+async function findMockBusinessPartner({ taxNumber, registrationNumber }) {
+  const rows = await cds.db.run(SELECT.from('cc.bbbee.MockBusinessPartners'));
+  return matchMockBusinessPartner(rows, { taxNumber, registrationNumber });
+}
+
+async function verifyMockBusinessPartner(businessPartnerId) {
+  const row = await cds.db.run(SELECT.one.from('cc.bbbee.MockBusinessPartners').where({ businessPartnerId }));
+  return row ? { businessPartnerId: row.businessPartnerId, companyName: row.companyName } : null;
+}
+
 
 const DESTINATION_NAME =
   process.env.S4_BP_DESTINATION || 'S4HANA_BUSINESS_PARTNER';
@@ -106,20 +129,48 @@ export async function syncSupplierCompliance(supplier, certificate, options = {}
 
   const { payload, missingMappings } =
     buildBusinessPartnerPatch(supplier, certificate);
-
-  const mode = (process.env.S4_SYNC_MODE || 'dry-run').toLowerCase();
+  const backendMode = getBackendMode();
+  const mode = String(process.env.S4_SYNC_MODE || (backendMode === 'mock' ? 'mock' : 'dry-run')).toLowerCase();
 
   if (mode === 'dry-run') {
     return {
       status: 'DryRun',
-      message: 'Dry run only; no S/4HANA request was sent.',
+      message: 'Dry run only; no external or mock Business Partner record was changed.',
       payload,
       missingMappings
     };
   }
 
-  if (mode !== 'live') {
-    throw new Error('S4_SYNC_MODE must be dry-run or live.');
+  if (backendMode === 'mock' && mode === 'mock') {
+    const businessPartner = await cds.db.run(
+      SELECT.one.from('cc.bbbee.MockBusinessPartners').where({ businessPartnerId: supplier.businessPartnerId })
+    );
+    if (!businessPartner) {
+      throw new Error(`Mock Business Partner ${supplier.businessPartnerId} was not found. Choose a seeded demo partner or link a valid mock BP ID.`);
+    }
+    const mockPatch = buildMockComplianceUpdate(supplier, certificate);
+    const repeated = options.idempotencyKey && businessPartner.lastIdempotencyKey === options.idempotencyKey;
+    if (!repeated) {
+      await cds.db.run(UPDATE('cc.bbbee.MockBusinessPartners').set({
+        ...mockPatch,
+        lastSyncAt: new Date().toISOString(),
+        lastIdempotencyKey: options.idempotencyKey ?? null,
+        lastSyncPayload: JSON.stringify(mockPatch)
+      }).where({ businessPartnerId: supplier.businessPartnerId }));
+    }
+    return {
+      status: 'Succeeded',
+      backend: 'mock',
+      duplicate: Boolean(repeated),
+      message: repeated
+        ? 'The mock Business Partner already processed this idempotency key; no duplicate update was applied.'
+        : 'Mock S/4HANA simulation updated the local demo Business Partner record. No external SAP system was called.',
+      payload: mockPatch
+    };
+  }
+
+  if (backendMode !== 'destination' || mode !== 'live') {
+    throw new Error('For a mock backend use S4_SYNC_MODE=mock or dry-run; for an external S/4HANA destination use S4_BACKEND_MODE=destination and S4_SYNC_MODE=live.');
   }
 
   if (missingMappings.length) {
@@ -237,6 +288,10 @@ export async function findBusinessPartner({ taxNumber, registrationNumber }) {
     return { matched: false, source: 'NO_IDENTIFIERS', businessPartnerId: null };
   }
 
+  if (getBackendMode() === 'mock') {
+    return findMockBusinessPartner({ taxNumber: tax, registrationNumber: registration });
+  }
+
   const destination = await getDestination({ destinationName: DESTINATION_NAME });
   if (!destination?.url) {
     return {
@@ -336,6 +391,10 @@ export async function findBusinessPartner({ taxNumber, registrationNumber }) {
 
 /** Verifies that a system-admin-entered BP number exists in the connected S/4 system. */
 export async function verifyBusinessPartnerId(businessPartnerId) {
+  businessPartnerPath(businessPartnerId); // validates the supplied ID for both backends
+  if (getBackendMode() === 'mock') {
+    return verifyMockBusinessPartner(String(businessPartnerId).trim());
+  }
   const path = businessPartnerPath(businessPartnerId);
   const destination = await getDestination({ destinationName: DESTINATION_NAME });
   if (!destination?.url) throw new Error(`Destination ${DESTINATION_NAME} is unavailable.`);

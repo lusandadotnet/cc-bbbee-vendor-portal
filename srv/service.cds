@@ -116,6 +116,10 @@ service ComplianceService {
     @readonly
     entity ExpiryJobRuns as projection on db.ExpiryJobRuns;
 
+    // Demo-only view into the simulated external ERP state; read-only and admin guarded.
+    @readonly
+    entity MockBusinessPartners as projection on db.MockBusinessPartners;
+
     type CertificateOCRResult {
         certificateID               : UUID;
         ocrStatus                   : String(20);

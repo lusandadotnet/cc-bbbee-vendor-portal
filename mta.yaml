@@ -18,6 +18,12 @@ modules:
     parameters:
       instances: 1
       buildpack: nodejs_buildpack
+    properties:
+      NODE_ENV: production
+      S4_BACKEND_MODE: mock
+      S4_SYNC_MODE: mock
+      BEE_NOTIFICATION_MODE: log
+      BB_BEE_AUTOMATION_ENABLED: "true"
     build-parameters:
       builder: npm-ci
     provides:
@@ -27,7 +33,6 @@ modules:
     requires:
       - name: cc-bbbee-portal-auth
       - name: cc-bbbee-portal-db
-      - name: cc-bbbee-portal-attachments
       - name: cc-bbbee-portal-destination
 
   - name: cc-bbbee-portal-db-deployer
@@ -130,11 +135,6 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
-  - name: cc-bbbee-portal-attachments
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: objectstore
-      service-plan: standard
   - name: cc-bbbee-portal-destination
     type: org.cloudfoundry.managed-service
     parameters:

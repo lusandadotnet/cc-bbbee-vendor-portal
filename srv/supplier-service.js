@@ -19,6 +19,12 @@ function clean(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function businessPartnerBackendLabel() {
+  return String(process.env.S4_BACKEND_MODE || 'mock').toLowerCase() === 'destination'
+    ? 'S/4HANA Business Partner API'
+    : 'mock Business Partner registry';
+}
+
 function getIdentity(req) {
   const identity = requireAuthenticated(req);
   if (isProduction() && (!identity || identity === 'local-dev')) {
@@ -111,7 +117,7 @@ async function matchSupplier(req) {
       await tx.run(UPDATE('cc.bbbee.Suppliers').set({
         businessPartnerId: s4Match.businessPartnerId,
         s4SyncStatus: 'Linked',
-        s4SyncMessage: 'Legacy supplier reconciled against API_BUSINESS_PARTNER.'
+        s4SyncMessage: `Legacy supplier reconciled against the ${businessPartnerBackendLabel()}.`
       }).where({ ID: supplier.ID }));
       await tx.run(INSERT.into('cc.bbbee.AuditTrail').entries({
         ID: cds.utils.uuid(), supplier_ID: supplier.ID, action: 'SupplierLinkedToS4', performedBy: identity,
@@ -130,7 +136,7 @@ async function matchSupplier(req) {
       companyName: supplier.companyName,
       onboardingRequestID: null,
       message: supplier.businessPartnerId && s4Match?.matched
-        ? 'Your details matched the local supplier and S/4HANA Business Partner records.'
+        ? `Your details matched the local supplier and ${businessPartnerBackendLabel()}.`
         : 'Your details matched an existing supplier record.'
     };
   }
@@ -158,7 +164,7 @@ async function matchSupplier(req) {
         businessPartnerId: linked.businessPartnerId,
         companyName: linked.companyName,
         onboardingRequestID: null,
-        message: 'Your identifiers matched an existing S/4HANA Business Partner.'
+        message: `Your identifiers matched an existing ${businessPartnerBackendLabel()}.`
       };
     }
 
@@ -173,7 +179,7 @@ async function matchSupplier(req) {
       registrationNumber: registrationNumber || null,
       contactEmail: contactEmail || null,
       s4SyncStatus: 'Linked',
-      s4SyncMessage: 'Matched against API_BUSINESS_PARTNER.'
+      s4SyncMessage: `Matched against the ${businessPartnerBackendLabel()}.`
     }));
     await tx.run(INSERT.into('cc.bbbee.AuditTrail').entries({
       ID: cds.utils.uuid(), supplier_ID: supplierID, action: 'SupplierLinkedToS4', performedBy: identity,
@@ -187,7 +193,7 @@ async function matchSupplier(req) {
       businessPartnerId: s4Match.businessPartnerId,
       companyName: s4CompanyName,
       onboardingRequestID: null,
-      message: 'Your identifiers matched an S/4HANA Business Partner and the local supplier record was linked.'
+      message: `Your identifiers matched the ${businessPartnerBackendLabel()} and the local supplier record was linked.`
     };
   }
 
@@ -211,7 +217,7 @@ async function matchSupplier(req) {
       contactEmail: contactEmail || null,
       requestedByIdentity: identity === 'local-dev' ? null : identity,
       status: 'Pending',
-      reviewNotes: s4Match.message ? `S/4HANA lookup: ${s4Match.message}` : null
+      reviewNotes: s4Match.message ? `Business Partner lookup (${businessPartnerBackendLabel()}): ${s4Match.message}` : null
     }));
     onboardingRequest = { ID: onboardingRequestID };
   }
@@ -246,9 +252,9 @@ export async function approveOnboardingRequest(req) {
     if (!remarks) return req.reject(400, "Explain the administrator's manual Business Partner selection in the approval remarks.");
     try {
       const verified = await verifyBusinessPartnerId(businessPartnerId);
-      if (!verified) return req.reject(409, 'The entered Business Partner ID does not exist in the connected S/4HANA system.');
+      if (!verified) return req.reject(409, `The entered Business Partner ID does not exist in the ${businessPartnerBackendLabel()}.`);
     } catch (error) {
-      return req.reject(503, `The entered Business Partner could not be verified against S/4HANA: ${error.message}`);
+      return req.reject(503, `The entered Business Partner could not be verified against the ${businessPartnerBackendLabel()}: ${error.message}`);
     }
   } else {
     try {
@@ -256,10 +262,10 @@ export async function approveOnboardingRequest(req) {
       if (match.matched) businessPartnerId = match.businessPartnerId;
       else return req.reject(409, `The identifiers do not currently resolve to one confirmed Business Partner (${match.source || 'lookup failed'}). Enter a verified BP ID with an administrator rationale to complete manual resolution.`);
     } catch (error) {
-      return req.reject(503, `S/4HANA identifier lookup failed: ${error.message}`);
+      return req.reject(503, `Business Partner identifier lookup failed: ${error.message}`);
     }
   }
-  if (!/^[A-Za-z0-9]{1,10}$/.test(businessPartnerId || '')) return req.reject(400, 'Enter a valid S/4HANA Business Partner ID, or ensure the S/4HANA destination resolves the supplier identifiers.');
+  if (!/^[A-Za-z0-9]{1,10}$/.test(businessPartnerId || '')) return req.reject(400, 'Enter a valid Business Partner ID that exists in the configured Business Partner backend.');
 
   const conflict = await tx.run(SELECT.from('cc.bbbee.Suppliers').where({ businessPartnerId }).limit(2));
   if (conflict.length) return req.reject(409, 'This Business Partner is already linked to a local supplier. Resolve the duplicate before approving onboarding.');
@@ -285,10 +291,10 @@ export async function approveOnboardingRequest(req) {
   await tx.run(INSERT.into('cc.bbbee.AuditTrail').entries({
     ID: cds.utils.uuid(), supplier_ID: supplierID, onboardingRequest_ID: requestID,
     action: 'ApproveOnboarding', performedBy: identity,
-    remarks: remarks || 'Supplier linked to S/4HANA Business Partner.',
+    remarks: remarks || `Supplier linked to the ${businessPartnerBackendLabel()}.`,
     fieldDeltas: JSON.stringify({ businessPartnerId: { before: null, after: businessPartnerId }, status: { before: 'Pending', after: 'Matched' } })
   }));
-  return { requestID, supplierID, businessPartnerId, status: 'Matched', message: 'Supplier was linked to S/4HANA and the onboarding request was approved.' };
+  return { requestID, supplierID, businessPartnerId, status: 'Matched', message: `Supplier was linked to the ${businessPartnerBackendLabel()} and the onboarding request was approved.` };
 }
 
 export async function rejectOnboardingRequest(req) {

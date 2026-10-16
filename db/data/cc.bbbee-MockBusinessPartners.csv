@@ -1,0 +1,5 @@
+businessPartnerId,companyName,taxNumber,registrationNumber,beeLevel,recognitionFactor,certificateExpiry,enterpriseType,complianceStatus,blackOwnership,blackWomenOwnership
+7000000001,Ubuntu Industrial Supplies (Pty) Ltd,9123456789,2015/123456/07,4,100.00,2027-10-10,GEN,Compliant,51.00,30.00
+7000000002,Sakhile Plant Services (Pty) Ltd,9876543210,2018/654321/07,2,125.00,2027-06-30,GEN,Compliant,55.00,35.00
+7000000003,Ezethu Engineering (Pty) Ltd,9012345678,2019/111222/07,5,80.00,2027-03-31,QSE,Compliant,30.00,15.00
+7000000004,Imbokodo Technical Services (Pty) Ltd,9234567890,2020/222333/07,,,,,Unknown,,

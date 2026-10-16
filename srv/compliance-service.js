@@ -360,7 +360,7 @@ export default class ComplianceService extends cds.ApplicationService {
     this.before('READ', 'AuditTrail', req => {
       if (isProduction() && !isComplianceUser(req)) return req.reject(403, 'Only compliance officers and system administrators can access the audit trail.');
     });
-    for (const entity of ['IntegrationOutbox', 'NotificationEvents', 'ExpiryJobRuns']) {
+    for (const entity of ['IntegrationOutbox', 'NotificationEvents', 'ExpiryJobRuns', 'MockBusinessPartners']) {
       this.before('READ', entity, req => {
         if (isProduction() && !hasRole(req.user, 'BEE_System_Admin')) return req.reject(403, 'Only a B-BBEE System Administrator can access automation operations.');
       });

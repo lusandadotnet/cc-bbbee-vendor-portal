@@ -1,0 +1,50 @@
+{
+	"_version": "1.89.0",
+	"sap.app": {
+		"id": "za.co.bbbee.supplierportal",
+		"type": "application",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"title": "B-BBEE Supplier Portal",
+		"description": "Register a supplier, upload a B-BBEE certificate, review Azure OCR extraction and submit for compliance review.",
+		"dataSources": {
+			"supplierService": {
+				"uri": "/supplier/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.0"
+				}
+			},
+			"complianceService": {
+				"uri": "/compliance/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "4.0"
+				}
+			}
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"dependencies": {
+			"minUI5Version": "1.153.0",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.core": {}
+			}
+		},
+		"models": {},
+		"resources": {
+			"css": []
+		},
+		"flexBundle": false
+	}
+}

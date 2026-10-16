@@ -25,19 +25,27 @@
   "cds": {
     "requires": {
       "db": {
-        "kind": "sqlite",
-        "impl": "@cap-js/sqlite",
-        "credentials": {
-          "url": "db.sqlite"
+        "[development]": {
+          "kind": "sqlite",
+          "impl": "@cap-js/sqlite",
+          "credentials": {
+            "url": "db.sqlite"
+          }
+        },
+        "[production]": {
+          "kind": "hana"
         }
       },
       "[production]": {
         "auth": "xsuaa",
-        "db": {
-          "kind": "hana"
-        },
         "destinations": true,
-        "html5-repo": true
+        "html5-repo": true,
+        "attachments": {
+          "kind": "db"
+        },
+        "malwareScanner": {
+          "kind": "malwareScanner-mocked"
+        }
       }
     },
     "model": [
