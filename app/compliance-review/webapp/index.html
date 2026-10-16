@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>B-BBE Compliance Review</title>
+    <style>
+        html, body, body > div, #container, #container-uiarea {
+            height: 100%;
+        }
+    </style>
+    <script
+        id="sap-ui-bootstrap"
+        src="https://sapui5.hana.ondemand.com/1.153.0/resources/sap-ui-core.js"
+        data-sap-ui-theme="sap_horizon"
+        data-sap-ui-resource-roots='{
+            "za.co.bbbee.compliancereview": "./"
+        }'
+        data-sap-ui-on-init="module:sap/ui/core/ComponentSupport"
+        data-sap-ui-compat-version="edge"
+        data-sap-ui-async="true"
+        data-sap-ui-frame-options="trusted"
+    ></script>
+</head>
+<body class="sapUiBody sapUiSizeCompact" id="content">
+    <div style="position:fixed;right:18px;bottom:18px;z-index:10000;display:flex;gap:8px;flex-wrap:wrap"><a href="./certificate-review.html" title="Evidence review workbench" style="background:#102b43;color:#fff;border-radius:8px;padding:11px 14px;font:700 12px Arial,sans-serif;text-decoration:none;box-shadow:0 4px 16px #0002">Certificate review workbench ↗</a><a href="./onboarding.html" title="Supplier onboarding queue" style="background:#0c6e66;color:#fff;border-radius:8px;padding:11px 14px;font:700 12px Arial,sans-serif;text-decoration:none;box-shadow:0 4px 16px #0002">Supplier onboarding queue ↗</a></div>
+    <div
+        data-sap-ui-component
+        data-name="za.co.bbbee.compliancereview"
+        data-id="container"
+        data-settings='{"id" : "za.co.bbbee.compliancereview"}'
+        data-handle-validation="true"
+    ></div>
+</body>
+</html>

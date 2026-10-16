@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <title>B-BBEE Supplier Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true">B</div>
+    <div class="brand-copy">
+      <p class="eyebrow">PROCUREMENT COMPLIANCE</p>
+      <h1>B-BBEE Supplier Portal</h1>
+    </div>
+    <div class="header-side">Secure supplier workspace</div>
+  </header>
+
+  <main class="layout">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">SUPPLIER ONBOARDING & CERTIFICATION</p>
+        <h2>Keep your compliance evidence current.</h2>
+        <p class="intro-copy">Link your business to its SAP Business Partner record, upload a valid certificate or affidavit, review extracted values and submit it for procurement compliance review.</p>
+      </div>
+      <div class="steps" aria-label="Portal steps">
+        <div class="step active"><span>01</span><b>Link supplier</b></div>
+        <div class="step"><span>02</span><b>Upload evidence</b></div>
+        <div class="step"><span>03</span><b>Submit for review</b></div>
+      </div>
+    </section>
+
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="panel" id="supplier-panel">
+      <div class="panel-heading">
+        <div><span class="step-label">STEP 1</span><h2>Link your business</h2></div>
+        <p>We match the identifiers you provide against the local registry and S/4HANA Business Partner API.</p>
+      </div>
+      <form id="match-form" class="form-grid">
+        <label class="span-2">Registered company name <span class="required">*</span>
+          <input name="companyName" required maxlength="100" autocomplete="organization" placeholder="Registered legal name">
+        </label>
+        <label>South African tax number
+          <input name="taxNumber" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" placeholder="10 digits">
+        </label>
+        <label>CIPC registration number
+          <input name="registrationNumber" maxlength="20" placeholder="e.g. 2008/123456/07">
+        </label>
+        <label class="span-2">Supplier contact email <span class="required">*</span>
+          <input name="contactEmail" required type="email" maxlength="100" autocomplete="email" placeholder="compliance@company.co.za">
+        </label>
+        <div class="form-actions span-2">
+          <button class="button primary" type="submit" id="match-button">Match supplier</button>
+          <span class="muted">Provide at least one identifier: tax number or CIPC registration number.</span>
+        </div>
+      </form>
+      <div id="match-result" class="match-result" hidden></div>
+    </section>
+
+    <section class="panel" id="certificates-panel" hidden>
+      <div class="panel-heading row-heading">
+        <div><span class="step-label">STEPS 2–3</span><h2>Certificates & affidavits</h2></div>
+        <button id="refresh-button" class="button secondary" type="button">Refresh</button>
+      </div>
+      <div id="supplier-summary" class="supplier-summary"></div>
+      <div class="list-header">
+        <h3>Your submissions</h3>
+        <button id="new-draft-button" class="button primary" type="button">+ New draft</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Certificate</th><th>Enterprise type</th><th>Level</th><th>Status</th><th>OCR</th><th>Expires</th><th></th></tr></thead>
+          <tbody id="certificates-rows"><tr><td colspan="7" class="empty">No certificate records loaded.</td></tr></tbody>
+        </table>
+      </div>
+      <section class="editor" id="editor" hidden>
+        <div class="editor-heading"><div><span class="step-label">CERTIFICATE RECORD</span><h3 id="editor-title">New draft</h3></div><span id="status-pill" class="pill draft">Draft</span></div>
+        <form id="certificate-form" class="form-grid">
+          <label>Certificate number<input name="certificateNumber" maxlength="50" placeholder="Shown on the evidence"></label>
+          <label>Enterprise type<select name="enterpriseType"><option value="">Select type</option><option value="EME">EME</option><option value="QSE">QSE</option><option value="GEN">Generic</option></select></label>
+          <label>Evidence type<select name="documentType"><option value="">Select document type</option><option value="EME_AFFIDAVIT">EME affidavit</option><option value="QSE_AFFIDAVIT">QSE affidavit</option><option value="QSE_SCORECARD">QSE scorecard</option><option value="GENERIC_SANAS_CERTIFICATE">Generic SANAS certificate</option></select></label>
+          <label class="span-2">Entity name on certificate<input name="extractedEntityName" maxlength="100" placeholder="Will be extracted by OCR if available"></label>
+          <label>Registration number on certificate<input name="extractedRegistrationNumber" maxlength="20"></label>
+          <label>SANAS agency number<input name="sanasAgencyNumber" maxlength="30" placeholder="Required for QSE / Generic"></label>
+          <label>B-BBEE level<select name="beeLevel"><option value="">Select level</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+          <label>Issue date<input name="issueDate" type="date"></label>
+          <label>Expiry date<input name="expiryDate" type="date"></label>
+          <label>Black ownership (%)<input name="blackOwnership" type="number" min="0" max="100" step="0.01"></label>
+          <label>Black women ownership (%)<input name="blackWomenOwnership" type="number" min="0" max="100" step="0.01"></label>
+          <label class="check-field"><input name="isNonCompliant" type="checkbox"><span>Evidence indicates Non-Compliant</span></label>
+          <label class="check-field"><input name="empoweringSupplier" type="checkbox"><span>Empowering supplier</span></label>
+          <div class="upload-zone span-2">
+            <label class="upload-label" for="document-file">Certificate, affidavit or scorecard <span class="required">*</span></label>
+            <p>PDF, PNG or JPEG up to 10 MB. The document is scanned before OCR.</p>
+            <input id="document-file" type="file" accept="application/pdf,image/png,image/jpeg">
+            <div class="upload-row"><button id="upload-button" class="button secondary" type="button">Upload & analyse</button><span id="upload-status" class="muted">No document uploaded in this session.</span></div>
+          </div>
+          <div class="form-actions span-2">
+            <button class="button primary" type="submit" id="save-button">Save draft</button>
+            <button class="button submit" type="button" id="submit-review-button" disabled>Submit for review</button>
+            <button class="button quiet" type="button" id="close-editor-button">Close</button>
+          </div>
+        </form>
+      </section>
+    </section>
+
+    <section class="footnote"><strong>Important:</strong> OCR is an extraction aid, not an automatic approval. Check every extracted field and ensure the evidence is valid before submitting. Only a compliance officer can approve or reject a certificate.</section>
+  </main>
+  <footer><span>B-BBEE Vendor Portal</span><span>Built on SAP CAP · Azure Document Intelligence · SAP Business Partner API</span></footer>
+</body>
+</html>

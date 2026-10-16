@@ -1,0 +1,153 @@
+_schema-version: 3.3.0
+ID: cc-bbbee-portal
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+  deploy_mode: html5-repo
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: cc-bbbee-portal-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: cc-bbbee-portal-auth
+      - name: cc-bbbee-portal-db
+      - name: cc-bbbee-portal-attachments
+      - name: cc-bbbee-portal-destination
+
+  - name: cc-bbbee-portal-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: cc-bbbee-portal-db
+  - name: cc-bbbee-portal
+    type: approuter.nodejs
+    path: .deploy/app-router
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: cc-bbbee-portal-auth
+      - name: cc-bbbee-portal-destination
+      - name: cc-bbbee-portal-html5-runtime
+    provides:
+      - name: app-api
+        properties:
+          app-protocol: ${protocol}
+          app-uri: ${default-uri}
+
+  - name: cc-bbbee-portal-app-deployer
+    type: com.sap.application.content
+    path: gen
+    build-parameters:
+      build-result: app/
+      requires:
+        - name: ccbbbeeportalcompliancereview
+          artifacts:
+            - compliance-review.zip
+          target-path: app/
+        - name: ccbbbeeportalsupplierportal
+          artifacts:
+            - supplier-portal.zip
+          target-path: app/
+    requires:
+      - name: cc-bbbee-portal-auth
+      - name: srv-api
+      - name: cc-bbbee-portal-html5-repo-host
+        parameters:
+          content-target: true
+          config:
+            HTML5Runtime_enabled: true
+
+  - name: ccbbbeeportalcompliancereview
+    type: html5
+    path: app/compliance-review
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --no-audit --no-fund --package-lock=false
+        - npm run build
+      supported-platforms:
+        []
+
+  - name: ccbbbeeportalsupplierportal
+    type: html5
+    path: app/supplier-portal
+    build-parameters:
+      build-result: dist
+      builder: custom
+      commands:
+        - npm install --no-audit --no-fund --package-lock=false
+        - npm run build
+      supported-platforms:
+        []
+
+resources:
+  - name: cc-bbbee-portal-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: cc-bbbee-portal-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
+          redirect-uris:
+            - https://*~{app-api/app-uri}/**
+    requires:
+      - name: app-api
+  - name: cc-bbbee-portal-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: cc-bbbee-portal-attachments
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: objectstore
+      service-plan: standard
+  - name: cc-bbbee-portal-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+
+  - name: cc-bbbee-portal-html5-repo-host
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-host
+  - name: cc-bbbee-portal-html5-runtime
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: html5-apps-repo
+      service-plan: app-runtime

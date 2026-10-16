@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>B-BBEE Certificate Review Workbench</title>
+  <link rel="stylesheet" href="./certificate-review.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">B-BBEE COMPLIANCE</p>
+      <h1>Certificate review workbench</h1>
+      <p class="subhead">Review the evidence beside its extracted values. All decisions are recorded in the audit trail.</p>
+    </div>
+    <nav>
+      <a href="./index.html">Fiori review app</a>
+      <a href="./onboarding.html">Supplier onboarding</a>
+    </nav>
+  </header>
+  <main>
+    <section class="queue panel">
+      <div class="panel-heading">
+        <div><h2>Pending review</h2><p id="queue-summary">Loading certificates…</p></div>
+        <button id="refresh" class="secondary">Refresh queue</button>
+      </div>
+      <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Certificate / Supplier</th><th>Type</th><th>Level</th><th>Expires</th><th>OCR</th><th></th></tr></thead>
+          <tbody id="queue-rows"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+    <section id="workspace" class="workspace" hidden>
+      <div class="panel evidence">
+        <div class="panel-heading"><div><h2>Document evidence</h2><p id="file-caption">Select a certificate.</p></div></div>
+        <div id="preview-empty" class="preview-empty">Select a certificate from the queue to inspect its attachment.</div>
+        <iframe id="pdf-preview" title="Certificate PDF preview" hidden></iframe>
+        <img id="image-preview" alt="Uploaded certificate evidence" hidden>
+        <div id="unsupported-preview" class="preview-empty" hidden>Inline preview is not available for this file type. Use “Open document” to inspect the uploaded evidence.</div>
+        <a id="open-document" class="open-document" href="#" target="_blank" rel="noopener" hidden>Open document in a new tab ↗</a>
+      </div>
+      <div class="panel details">
+        <div class="panel-heading"><div><h2 id="detail-title">Certificate details</h2><p id="detail-subtitle">OCR values are read-only during review. Return the certificate for supplier corrections if needed.</p></div></div>
+        <dl id="field-list" class="field-list"></dl>
+        <div class="decision">
+          <label for="remarks">Decision remarks <span>(required for rejection or resubmission)</span></label>
+          <textarea id="remarks" rows="3" placeholder="Record the decision rationale…"></textarea>
+          <div class="decision-actions">
+            <button id="approve" class="approve">Approve certificate</button>
+            <button id="resubmit" class="secondary">Request resubmission</button>
+            <button id="reject" class="reject">Reject certificate</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="./certificate-review.js" defer></script>
+</body>
+</html>

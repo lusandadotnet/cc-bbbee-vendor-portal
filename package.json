@@ -1,0 +1,55 @@
+{
+  "name": "cc-bbbee-portal",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@cap-js/attachments": "^4.0.0",
+    "@cap-js/hana": "^3",
+    "@sap-cloud-sdk/connectivity": "^4.9.1",
+    "@sap-cloud-sdk/http-client": "^4.9.1",
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4",
+    "env": "^0.0.2"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^3",
+    "@sap/cds-dk": "^10",
+    "cds-plugin-ui5": "^0.17.0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "test": "node --test tests/*.test.js",
+    "watch-compliance-review": "cds watch --open za.co.bbbee.compliancereview/index.html?sap-ui-xx-viewCache=false --livereload false"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "impl": "@cap-js/sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      },
+      "[production]": {
+        "auth": "xsuaa",
+        "db": {
+          "kind": "hana"
+        },
+        "destinations": true,
+        "html5-repo": true
+      }
+    },
+    "model": [
+      "db",
+      "srv",
+      "app"
+    ]
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/compliance-review"
+  ]
+}

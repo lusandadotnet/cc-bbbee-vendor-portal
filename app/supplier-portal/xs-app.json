@@ -1,0 +1,24 @@
+{
+  "routes": [
+    {
+      "source": "^/supplier/(.*)$",
+      "target": "/supplier/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "csrfProtection": true
+    },
+    {
+      "source": "^/compliance/(.*)$",
+      "target": "/compliance/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "csrfProtection": true
+    },
+    {
+      "source": "^/(.*)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+specVersion: "4.0"
+metadata:
+  name: za.co.bbbee.supplierportal
+type: application
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        ignoreCertErrors: false
+        backend:
+          - path: /compliance
+            url: http://localhost:4004
+          - path: /supplier
+            url: http://localhost:4004
+        ui5:
+          path:
+            - /resources
+            - /test-resources
+          url: https://sapui5.hana.ondemand.com
+builder:
+  resources:
+    excludes:
+      - /test/**
+  customTasks:
+    - name: ui5-task-zipper
+      afterTask: generateVersionInfo
+      configuration:
+        archiveName: supplier-portal
+        relativePaths: true
+        additionalFiles:
+          - xs-app.json
+resources:
+  configuration:
+    propertiesFileSourceEncoding: UTF-8
