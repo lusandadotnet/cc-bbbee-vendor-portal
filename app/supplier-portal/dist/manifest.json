@@ -6,8 +6,8 @@
 		"applicationVersion": {
 			"version": "1.0.0"
 		},
-		"title": "B-BBEE Supplier Portal",
-		"description": "Register a supplier, upload a B-BBEE certificate, review Azure OCR extraction and submit for compliance review.",
+		"title": "Supplier Workspace",
+		"description": "Supplier registration, certificate and affidavit submission, and compliance status.",
 		"dataSources": {
 			"supplierService": {
 				"uri": "/supplier/",
@@ -34,17 +34,41 @@
 		}
 	},
 	"sap.ui5": {
+		"rootView": {
+			"viewName": "za.co.bbbee.supplierportal.view.Main",
+			"type": "XML",
+			"async": true,
+			"id": "main"
+		},
 		"dependencies": {
 			"minUI5Version": "1.153.0",
 			"libs": {
 				"sap.m": {},
-				"sap.ui.core": {}
+				"sap.f": {},
+				"sap.ui.core": {},
+				"sap.ui.layout": {},
+				"sap.ui.unified": {}
 			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
 		},
 		"models": {},
 		"resources": {
-			"css": []
+			"css": [
+				{
+					"uri": "style.css"
+				}
+			]
 		},
 		"flexBundle": false
+	},
+	"sap.fiori": {
+		"registrationIds": [],
+		"archeType": "transactional"
+	},
+	"sap.cloud": {
+		"service": "cc.bbbee.portal"
 	}
 }

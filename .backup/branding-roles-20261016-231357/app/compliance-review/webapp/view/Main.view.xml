@@ -1,0 +1,184 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:form="sap.ui.layout.form"
+  xmlns:core="sap.ui.core"
+  controllerName="za.co.bbbee.compliancereview.controller.Main"
+  displayBlock="true">
+  <f:ShellBar id="complianceShellBar" title="B-BBEE Vendor Portal" secondTitle="Compliance Review" showNavButton="false" showMenuButton="false" />
+  <f:DynamicPage id="compliancePage" class="bbbeeDynamicPage" toggleHeaderOnTitleClick="false">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <VBox>
+            <Title text="B-BBEE Compliance Review" level="H1" />
+            <Text text="Certificate decisions and supplier onboarding" class="sapUiTinyMarginTop" />
+          </VBox>
+        </f:heading>
+        <f:actions>
+          <Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press="onRefreshAll" />
+        </f:actions>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader pinnable="false">
+        <VBox class="sapUiSmallMarginBottom">
+          <ObjectStatus text="Compliance work center" icon="sap-icon://shield" state="Information" />
+          <Text text="Review clean supporting evidence before approving a certificate. Provide a reason when rejecting evidence or requesting corrections." class="sapUiTinyMarginTop" />
+        </VBox>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <VBox class="sapUiContentPadding bbbeeContent" width="100%">
+        <MessageStrip text="{state>/messageText}" type="{state>/messageType}" showIcon="true" showCloseButton="true" visible="{state>/messageVisible}" class="sapUiSmallMarginBottom" />
+        <IconTabBar id="workTabs" selectedKey="{state>/activeTab}" select="onTabSelect" expandable="false" class="bbbeeWorkTabs">
+          <items>
+            <IconTabFilter key="review" text="Certificate review" icon="sap-icon://task" count="{state>/reviewCount}">
+              <VBox class="sapUiSmallMarginTop">
+                <Toolbar class="bbbeeSectionToolbar">
+                  <Title text="Pending certificate decisions" level="H2" />
+                  <ToolbarSpacer />
+                  <ObjectStatus text="{state>/reviewSummary}" state="Information" />
+                </Toolbar>
+                <Table id="reviewTable" items="{state>/certificates}" growing="true" growingThreshold="15" noDataText="No certificates are currently pending review." sticky="ColumnHeaders">
+                  <columns>
+                    <Column width="16rem"><Text text="Certificate / supplier" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Enterprise type" /></Column>
+                    <Column><Text text="B-BBEE level" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Expiry" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Evidence scan" /></Column>
+                    <Column width="7rem" hAlign="End"><Text text="Action" /></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem vAlign="Middle">
+                      <cells>
+                        <VBox>
+                          <Text text="{= ${state>certificateNumber} || 'Certificate draft'}" wrapping="true" />
+                          <Text text="{= ${state>supplier/companyName} || ${state>extractedEntityName} || 'Unknown supplier'}" class="sapUiTinyMarginTop" />
+                          <Text text="{= ${state>extractedRegistrationNumber} || ${state>supplier/registrationNumber} || 'No registration number'}" class="bbbeeSubtleText" />
+                        </VBox>
+                        <Text text="{= ${state>enterpriseType} || '—'}" />
+                        <ObjectStatus text="{= ${state>isNonCompliant} ? 'Non-Compliant' : (${state>beeLevel} || '—')}" state="{= ${state>isNonCompliant} ? 'Error' : 'None'}" />
+                        <Text text="{state>expiryDate}" />
+                        <ObjectStatus text="{= ${state>ocrStatus} || 'Not started'}" state="{state>ocrState}" />
+                        <Button text="Review" icon="sap-icon://inspect" type="Emphasized" press="onReviewPress" />
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </IconTabFilter>
+            <IconTabFilter key="onboarding" text="Supplier onboarding" icon="sap-icon://customer" count="{state>/onboardingCount}">
+              <VBox class="sapUiSmallMarginTop">
+                <Toolbar class="bbbeeSectionToolbar">
+                  <Title text="Pending supplier identity requests" level="H2" />
+                  <ToolbarSpacer />
+                  <Button text="Refresh queue" icon="sap-icon://refresh" type="Transparent" press="onRefreshOnboarding" />
+                </Toolbar>
+                <Table id="onboardingTable" items="{state>/onboardingRequests}" growing="true" growingThreshold="15" noDataText="No pending onboarding requests are available to this identity." sticky="ColumnHeaders">
+                  <columns>
+                    <Column width="15rem"><Text text="Proposed supplier" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Identifiers" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Contact email" /></Column>
+                    <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Submitted" /></Column>
+                    <Column minScreenWidth="Desktop" demandPopin="true"><Text text="Review notes" /></Column>
+                    <Column width="11rem" hAlign="End"><Text text="Actions" /></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem vAlign="Middle">
+                      <cells>
+                        <VBox>
+                          <Text text="{state>proposedCompanyName}" wrapping="true" />
+                          <ObjectStatus text="{state>status}" state="{state>statusState}" />
+                        </VBox>
+                        <VBox>
+                          <Text text="{= 'Tax: ' + (${state>taxNumber} || 'not supplied')}" />
+                          <Text text="{= 'CIPC: ' + (${state>registrationNumber} || 'not supplied')}" />
+                        </VBox>
+                        <Text text="{= ${state>contactEmail} || 'No email supplied'}" wrapping="true" />
+                        <Text text="{state>createdDate}" />
+                        <Text text="{= ${state>reviewNotes} || 'No prior review notes'}" wrapping="true" />
+                        <HBox justifyContent="End" wrap="Wrap">
+                          <Button text="Approve" icon="sap-icon://accept" type="Accept" press="onApproveOnboarding" class="sapUiTinyMarginEnd" />
+                          <Button text="Reject" icon="sap-icon://decline" type="Reject" press="onRejectOnboarding" />
+                        </HBox>
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+
+  <Dialog id="reviewDialog" title="{state>/selectedTitle}" contentWidth="62rem" stretchOnPhone="true" verticalScrolling="true" horizontalScrolling="false" draggable="true" resizable="true">
+    <content>
+      <VBox class="sapUiContentPadding bbbeeReviewDetail" width="100%">
+        <ObjectHeader title="{state>/selectedTitle}" intro="{state>/selectedSubtitle}" responsive="true">
+          <statuses><ObjectStatus text="{state>/selected/status}" state="{state>/selected/statusState}" /></statuses>
+        </ObjectHeader>
+        <form:SimpleForm editable="false" layout="ResponsiveGridLayout" columnsM="2" columnsL="2" labelSpanS="12" labelSpanM="4" labelSpanL="4" emptySpanM="0" emptySpanL="0" adjustLabelSpan="false">
+          <core:Title text="Supplier and certificate" />
+          <Label text="Supplier" /><Text text="{state>/selected/supplierName}" />
+          <Label text="S/4HANA Business Partner" /><Text text="{state>/selected/businessPartnerId}" />
+          <Label text="Certificate number" /><Text text="{state>/selected/certificateNumber}" />
+          <Label text="Document type" /><Text text="{state>/selected/documentType}" />
+          <Label text="Certificate entity name" /><Text text="{state>/selected/extractedEntityName}" />
+          <Label text="Registration number" /><Text text="{state>/selected/extractedRegistrationNumber}" />
+          <Label text="SANAS agency number" /><Text text="{state>/selected/sanasAgencyNumber}" />
+          <Label text="Enterprise type" /><Text text="{state>/selected/enterpriseType}" />
+          <Label text="B-BBEE level" /><Text text="{state>/selected/beeLevelText}" />
+          <Label text="Recognition factor" /><Text text="{state>/selected/recognitionFactor}" />
+          <Label text="Black ownership (%)" /><Text text="{state>/selected/blackOwnership}" />
+          <Label text="Black women ownership (%)" /><Text text="{state>/selected/blackWomenOwnership}" />
+          <Label text="Empowering supplier" /><Text text="{state>/selected/empoweringSupplierText}" />
+          <Label text="Issue date" /><Text text="{state>/selected/issueDate}" />
+          <Label text="Expiry date" /><Text text="{state>/selected/expiryDate}" />
+          <Label text="OCR status" /><ObjectStatus text="{state>/selected/ocrStatus}" state="{state>/selected/ocrState}" />
+          <Label text="Uploaded evidence" /><VBox>
+            <ObjectStatus text="{state>/fileCaption}" state="{state>/attachmentState}" />
+            <Link text="Open uploaded document in a new tab" href="{state>/documentUrl}" target="_blank" visible="{state>/documentAvailable}" wrapping="true" />
+          </VBox>
+        </form:SimpleForm>
+        <Panel headerText="Evidence preview" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <PDFViewer id="pdfViewer" source="{state>/documentUrl}" title="{state>/selectedTitle}" displayType="Embedded" isTrustedSource="{state>/canApproveCertificate}" height="24rem" visible="{state>/previewPdf}" showDownloadButton="true" />
+            <Image src="{state>/documentUrl}" width="100%" densityAware="false" visible="{state>/previewImage}" />
+            <MessageStrip text="{state>/previewMessage}" type="{state>/previewMessageType}" showIcon="true" visible="{state>/previewMessageVisible}" />
+          </content>
+        </Panel>
+        <VBox class="sapUiSmallMarginTop">
+          <Label text="Decision remarks" required="true" labelFor="decisionRemarks" />
+          <TextArea id="decisionRemarks" value="{state>/decisionRemarks}" rows="3" growing="true" width="100%" placeholder="Required for rejection or a resubmission request. Use this field to explain what the supplier must correct." />
+        </VBox>
+      </VBox>
+    </content>
+    <buttons>
+      <Button text="Approve certificate" icon="sap-icon://accept" type="Accept" press="onApproveCertificate" enabled="{state>/canApproveCertificate}" />
+      <Button text="Request resubmission" icon="sap-icon://undo" type="Emphasized" press="onRequestResubmission" />
+      <Button text="Reject" icon="sap-icon://decline" type="Reject" press="onRejectCertificate" />
+      <Button text="Close" type="Transparent" press="onCloseReview" />
+    </buttons>
+  </Dialog>
+
+  <Dialog id="onboardingDialog" title="{state>/onboardingDialogTitle}" contentWidth="38rem" stretchOnPhone="true" verticalScrolling="true" draggable="true" resizable="true">
+    <content>
+      <VBox class="sapUiContentPadding">
+        <ObjectHeader title="{state>/selectedRequest/proposedCompanyName}" intro="{state>/selectedRequest/contactEmail}" responsive="true" />
+        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsM="1" columnsL="1" labelSpanS="12" labelSpanM="4" labelSpanL="4" adjustLabelSpan="false">
+          <Label text="Tax number" /><Text text="{state>/selectedRequest/taxNumber}" />
+          <Label text="CIPC registration" /><Text text="{state>/selectedRequest/registrationNumber}" />
+          <Label text="Confirmed S/4HANA Business Partner ID" /><Input id="businessPartnerId" value="{state>/businessPartnerId}" maxLength="10" placeholder="Leave blank to retry the identifier lookup" />
+          <Label text="Review remarks" required="{state>/onboardingRemarksRequired}" /><TextArea id="onboardingRemarks" value="{state>/onboardingRemarks}" rows="3" growing="true" width="100%" placeholder="Explain the decision or manual Business Partner selection." />
+        </form:SimpleForm>
+        <MessageStrip text="When a Business Partner ID is entered manually, include a remark explaining the selection. The backend verifies the ID against the configured Business Partner source." type="Information" showIcon="true" />
+      </VBox>
+    </content>
+    <beginButton><Button text="{state>/onboardingConfirmText}" type="Emphasized" press="onConfirmOnboardingDecision" /></beginButton>
+    <endButton><Button text="Cancel" type="Transparent" press="onCloseOnboarding" /></endButton>
+  </Dialog>
+</mvc:View>

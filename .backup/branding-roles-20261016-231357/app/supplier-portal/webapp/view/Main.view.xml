@@ -1,0 +1,179 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:form="sap.ui.layout.form"
+  xmlns:core="sap.ui.core"
+  xmlns:unified="sap.ui.unified"
+  controllerName="za.co.bbbee.supplierportal.controller.Main"
+  displayBlock="true">
+  <f:ShellBar id="supplierShellBar" title="B-BBEE Vendor Portal" secondTitle="Supplier Portal" showNavButton="false" showMenuButton="false" />
+  <f:DynamicPage id="supplierPage" class="bbbeeDynamicPage" toggleHeaderOnTitleClick="false">
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <VBox>
+            <Title text="B-BBEE Supplier Portal" level="H1" />
+            <Text text="Supplier compliance and certificate management" class="sapUiTinyMarginTop" />
+          </VBox>
+        </f:heading>
+        <f:actions>
+          <Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press="onRefresh" />
+        </f:actions>
+      </f:DynamicPageTitle>
+    </f:title>
+    <f:header>
+      <f:DynamicPageHeader pinnable="false">
+        <VBox class="sapUiSmallMarginBottom">
+          <ObjectStatus text="Secure supplier workspace" icon="sap-icon://shield" state="Information" />
+          <Text text="Link your business record, maintain current evidence, and submit certificates for compliance review." class="sapUiTinyMarginTop" />
+        </VBox>
+      </f:DynamicPageHeader>
+    </f:header>
+    <f:content>
+      <VBox class="sapUiContentPadding bbbeeContent" width="100%">
+        <MessageStrip id="messageStrip" text="{state>/messageText}" type="{state>/messageType}" showIcon="true" showCloseButton="true" visible="{state>/messageVisible}" class="sapUiSmallMarginBottom" />
+        <Panel headerText="Supplier identity" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
+          <content>
+            <form:SimpleForm id="matchForm" editable="true" layout="ResponsiveGridLayout" columnsM="2" columnsL="2" columnsXL="2" labelSpanS="12" labelSpanM="4" labelSpanL="4" emptySpanM="0" emptySpanL="0" adjustLabelSpan="false">
+              <core:Title text="Business details" />
+              <Label text="Registered company name" required="true" />
+              <Input id="companyName" value="{state>/match/companyName}" maxLength="100" placeholder="Registered legal name" autocomplete="organization" />
+              <Label text="Contact email" required="true" />
+              <Input id="contactEmail" value="{state>/match/contactEmail}" type="Email" maxLength="100" placeholder="compliance@company.co.za" />
+              <Label text="South African tax number" />
+              <Input id="taxNumber" value="{state>/match/taxNumber}" maxLength="10" type="Tel" placeholder="10 digits" />
+              <Label text="CIPC registration number" />
+              <Input id="registrationNumber" value="{state>/match/registrationNumber}" maxLength="20" placeholder="e.g. 2008/123456/07" />
+              <Label text="" />
+              <HBox wrap="Wrap" alignItems="Center">
+                <Button text="Match supplier" icon="sap-icon://person-placeholder" type="Emphasized" press="onMatchSupplier" enabled="{= !${state>/matching} }" />
+                <Text text="Provide at least one identifier: tax number or CIPC registration number." class="sapUiSmallMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom bbbeeHint" />
+              </HBox>
+            </form:SimpleForm>
+            <VBox visible="{state>/linked}" class="sapUiSmallMarginTop sapUiMediumMarginBottom sapUiContentPadding bbbeeSupplierSummary">
+              <ObjectStatus text="Supplier record linked" state="Success" icon="sap-icon://sys-enter-2" />
+              <Title text="{state>/supplierName}" level="H4" class="sapUiTinyMarginTop" />
+              <HBox wrap="Wrap" class="sapUiTinyMarginTop">
+                <ObjectAttribute title="Supplier ID" text="{state>/supplierID}" class="sapUiSmallMarginEnd" />
+                <ObjectAttribute title="S/4HANA Business Partner" text="{= ${state>/businessPartnerId} || 'Not linked'}" />
+              </HBox>
+              <Text text="{state>/supplierMessage}" wrapping="true" class="sapUiTinyMarginTop" />
+            </VBox>
+            <MessageStrip text="{state>/matchResultText}" type="Information" showIcon="true" visible="{state>/matchResultVisible}" class="sapUiSmallMargin" />
+          </content>
+        </Panel>
+        <Panel headerText="Certificates and affidavits" visible="{state>/linked}" class="sapUiSmallMarginBottom">
+          <headerToolbar>
+            <Toolbar>
+              <Title text="Your submissions" level="H3" />
+              <ToolbarSpacer />
+              <Button text="Refresh list" icon="sap-icon://refresh" type="Transparent" press="onRefreshCertificates" />
+              <Button text="New draft" icon="sap-icon://add" type="Emphasized" press="onNewDraft" />
+            </Toolbar>
+          </headerToolbar>
+          <content>
+            <Table id="certificatesTable" items="{state>/certificates}" growing="true" growingThreshold="15" noDataText="No certificate submissions yet. Create a draft to get started." sticky="ColumnHeaders">
+              <columns>
+                <Column width="15rem"><Text text="Certificate" /></Column>
+                <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Enterprise type" /></Column>
+                <Column minScreenWidth="Tablet" demandPopin="true"><Text text="B-BBEE level" /></Column>
+                <Column><Text text="Status" /></Column>
+                <Column minScreenWidth="Tablet" demandPopin="true"><Text text="OCR status" /></Column>
+                <Column minScreenWidth="Tablet" demandPopin="true"><Text text="Expires" /></Column>
+                <Column width="6rem" hAlign="End"><Text text="Action" /></Column>
+              </columns>
+              <items>
+                <ColumnListItem vAlign="Middle">
+                  <cells>
+                    <VBox>
+                      <Text text="{= ${state>certificateNumber} || ${state>extractedEntityName} || 'Untitled draft'}" wrapping="true" />
+                      <Text text="{state>ID}" class="sapUiTinyMarginTop bbbeeSubtleText" />
+                    </VBox>
+                    <Text text="{= ${state>enterpriseType} || '—'}" />
+                    <Text text="{= ${state>isNonCompliant} ? 'Non-Compliant' : (${state>beeLevel} || '—')}" />
+                    <ObjectStatus text="{state>status}" state="{state>statusState}" />
+                    <ObjectStatus text="{= ${state>ocrStatus} || 'Not started'}" state="{state>ocrState}" />
+                    <Text text="{= ${state>expiryDate} || '—' }" />
+                    <Button text="{= ${state>mutable} ? 'Open' : 'View'}" type="Transparent" press="onCertificatePress" />
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+        <MessageStrip text="OCR is an extraction aid, not automatic approval. Check all extracted values and ensure the evidence is valid before submitting. Only an authorised compliance officer can approve or reject a certificate." type="Information" showIcon="true" class="sapUiSmallMarginTop" />
+      </VBox>
+    </f:content>
+  </f:DynamicPage>
+  <Dialog id="editorDialog" title="{state>/editorTitle}" contentWidth="58rem" stretchOnPhone="true" verticalScrolling="true" horizontalScrolling="false" draggable="true" resizable="true">
+    <content>
+      <VBox class="sapUiContentPadding bbbeeEditor" width="100%">
+        <HBox wrap="Wrap" alignItems="Center" justifyContent="SpaceBetween" class="sapUiSmallMarginBottom">
+          <ObjectStatus text="{state>/editor/status}" state="{state>/editor/statusState}" />
+          <Text text="{state>/editor/ID}" class="bbbeeSubtleText" />
+        </HBox>
+        <MessageStrip text="{state>/editor/rejectionReason}" type="Warning" showIcon="true" visible="{= !!${state>/editor/rejectionReason} }" class="sapUiSmallMarginBottom" />
+        <form:SimpleForm editable="true" layout="ResponsiveGridLayout" columnsM="2" columnsL="2" columnsXL="2" labelSpanS="12" labelSpanM="4" labelSpanL="4" emptySpanM="0" emptySpanL="0" adjustLabelSpan="false">
+          <core:Title text="Certificate details" />
+          <Label text="Certificate number" />
+          <Input value="{state>/editor/certificateNumber}" maxLength="50" enabled="{state>/editorEditable}" />
+          <Label text="Document type" />
+          <Select selectedKey="{state>/editor/documentType}" enabled="{state>/editorEditable}" width="100%">
+            <items>
+              <core:Item key="EME_AFFIDAVIT" text="EME affidavit" />
+              <core:Item key="QSE_AFFIDAVIT" text="QSE affidavit" />
+              <core:Item key="QSE_SCORECARD" text="QSE scorecard" />
+              <core:Item key="GENERIC_SANAS_CERTIFICATE" text="Generic SANAS certificate" />
+            </items>
+          </Select>
+          <Label text="Enterprise type" />
+          <Select selectedKey="{state>/editor/enterpriseType}" enabled="{state>/editorEditable}" width="100%">
+            <items>
+              <core:Item key="EME" text="EME" /><core:Item key="QSE" text="QSE" /><core:Item key="GEN" text="Generic" />
+            </items>
+          </Select>
+          <Label text="B-BBEE level" />
+          <Select selectedKey="{state>/editor/beeLevel}" enabled="{state>/editorEditable}" width="100%">
+            <items>
+              <core:Item key="1" text="Level 1" /><core:Item key="2" text="Level 2" /><core:Item key="3" text="Level 3" /><core:Item key="4" text="Level 4" /><core:Item key="5" text="Level 5" /><core:Item key="6" text="Level 6" /><core:Item key="7" text="Level 7" /><core:Item key="8" text="Level 8" />
+            </items>
+          </Select>
+          <Label text="Entity name on certificate" />
+          <Input value="{state>/editor/extractedEntityName}" maxLength="100" enabled="{state>/editorEditable}" />
+          <Label text="Registration number on certificate" />
+          <Input value="{state>/editor/extractedRegistrationNumber}" maxLength="20" enabled="{state>/editorEditable}" />
+          <Label text="SANAS agency number" />
+          <Input value="{state>/editor/sanasAgencyNumber}" maxLength="30" enabled="{state>/editorEditable}" />
+          <Label text="Issue date" />
+          <DatePicker value="{state>/editor/issueDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" enabled="{state>/editorEditable}" width="100%" />
+          <Label text="Expiry date" />
+          <DatePicker value="{state>/editor/expiryDate}" valueFormat="yyyy-MM-dd" displayFormat="medium" enabled="{state>/editorEditable}" width="100%" />
+          <Label text="Black ownership (%)" />
+          <StepInput value="{state>/editor/blackOwnership}" min="0" max="100" step="0.01" displayValuePrecision="2" enabled="{state>/editorEditable}" width="100%" />
+          <Label text="Black women ownership (%)" />
+          <StepInput value="{state>/editor/blackWomenOwnership}" min="0" max="100" step="0.01" displayValuePrecision="2" enabled="{state>/editorEditable}" width="100%" />
+          <Label text="Non-compliant evidence" />
+          <CheckBox selected="{state>/editor/isNonCompliant}" text="Evidence indicates Non-Compliant" enabled="{state>/editorEditable}" />
+          <Label text="Empowering supplier" />
+          <CheckBox selected="{state>/editor/empoweringSupplier}" text="Empowering supplier" enabled="{state>/editorEditable}" />
+          <core:Title text="Supporting evidence" />
+          <Label text="Certificate or affidavit" />
+          <VBox>
+            <unified:FileUploader id="fileUploader" width="100%" fileType="pdf,png,jpg,jpeg" mimeType="application/pdf,image/png,image/jpeg" sameFilenameAllowed="true" enabled="{state>/editorEditable}" placeholder="Choose a PDF, PNG or JPEG (maximum 10 MB)" />
+            <HBox wrap="Wrap" alignItems="Center" class="sapUiSmallMarginTop">
+              <Button text="Upload and analyse" icon="sap-icon://upload" type="Emphasized" press="onUploadAndAnalyse" enabled="{state>/editorEditable}" />
+              <ObjectStatus text="{state>/attachmentStatusText}" state="{state>/attachmentStatusState}" class="sapUiSmallMarginBegin" />
+            </HBox>
+            <Text text="{state>/uploadMessage}" wrapping="true" class="sapUiSmallMarginTop" />
+          </VBox>
+        </form:SimpleForm>
+      </VBox>
+    </content>
+    <buttons>
+      <Button text="Save draft" icon="sap-icon://save" type="Emphasized" press="onSaveDraft" enabled="{state>/editorEditable}" />
+      <Button text="Submit for review" icon="sap-icon://paper-plane" type="Accept" press="onSubmitForReview" enabled="{state>/canSubmit}" visible="{state>/editorEditable}" />
+      <Button text="Close" type="Transparent" press="onCloseEditor" />
+    </buttons>
+  </Dialog>
+</mvc:View>

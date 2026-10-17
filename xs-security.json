@@ -18,22 +18,53 @@
     {
       "name": "BEE_Supplier_User",
       "description": "Supplier Representative",
-      "scope-references": ["$XSAPPNAME.BEE_Supplier_User"]
+      "scope-references": [
+        "$XSAPPNAME.BEE_Supplier_User"
+      ]
     },
     {
       "name": "BEE_Compliance_Officer",
       "description": "Procurement Compliance Officer",
-      "scope-references": ["$XSAPPNAME.BEE_Compliance_Officer"]
+      "scope-references": [
+        "$XSAPPNAME.BEE_Compliance_Officer"
+      ]
     },
     {
       "name": "BEE_System_Admin",
       "description": "Enterprise Auditor / System Administrator",
-      "scope-references": ["$XSAPPNAME.BEE_System_Admin"]
+      "scope-references": [
+        "$XSAPPNAME.BEE_System_Admin"
+      ]
     },
     {
       "name": "ComplianceOfficer",
       "description": "Compatibility role for existing reviewer assignments",
-      "scope-references": ["$XSAPPNAME.BEE_Compliance_Officer"]
+      "scope-references": [
+        "$XSAPPNAME.BEE_Compliance_Officer"
+      ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "B-BBEE Supplier User",
+      "description": "Access to the supplier workspace.",
+      "role-template-references": [
+        "$XSAPPNAME.BEE_Supplier_User"
+      ]
+    },
+    {
+      "name": "B-BBEE Compliance Officer",
+      "description": "Certificate review and supplier onboarding decisions.",
+      "role-template-references": [
+        "$XSAPPNAME.BEE_Compliance_Officer"
+      ]
+    },
+    {
+      "name": "B-BBEE System Administrator",
+      "description": "Administrative access to both workspaces.",
+      "role-template-references": [
+        "$XSAPPNAME.BEE_System_Admin"
+      ]
     }
   ]
 }

@@ -1,0 +1,11 @@
+.bbbeeDynamicPage { min-height: calc(100vh - 3rem); }
+.bbbeeContent { box-sizing: border-box; max-width: 104rem; width: 100%; margin: 0 auto; }
+.bbbeeWorkTabs { width: 100%; }
+.bbbeeSectionToolbar { border-bottom: 1px solid var(--sapGroup_ContentBorderColor); margin-bottom: .5rem; }
+.bbbeeSubtleText { color: var(--sapContent_LabelColor); font-size: .75rem; overflow-wrap: anywhere; }
+.bbbeeReviewDetail { min-width: 0; }
+@media (max-width: 599px) {
+  .bbbeeContent { padding: .5rem !important; }
+  .bbbeeReviewDetail { padding: .5rem !important; }
+  .bbbeeSectionToolbar .sapMTitle { white-space: normal; }
+}

@@ -3,44 +3,36 @@
 	"sap.app": {
 		"id": "za.co.bbbee.compliancereview",
 		"type": "application",
-		"i18n": {
-			"bundleUrl": "i18n/i18n.properties",
-			"supportedLocales": [
-				""
-			]
-		},
 		"applicationVersion": {
 			"version": "0.0.1"
 		},
-		"title": "{{appTitle}}",
-		"description": "{{appDescription}}",
-		"resources": "resources.json",
-		"sourceTemplate": {
-			"id": "@sap/generator-fiori:lrop",
-			"version": "1.33.0",
-			"toolsId": "3c8a902a-50cc-4bbd-afde-944eb09f696f"
-		},
+		"title": "Compliance Workspace",
+		"description": "Review B-BBEE certificates and supplier onboarding requests.",
 		"dataSources": {
 			"mainService": {
 				"uri": "/compliance/",
 				"type": "OData",
 				"settings": {
-					"annotations": [],
+					"odataVersion": "4.0"
+				}
+			},
+			"supplierService": {
+				"uri": "/supplier/",
+				"type": "OData",
+				"settings": {
 					"odataVersion": "4.0"
 				}
 			}
+		},
+		"i18n": {
+			"bundleUrl": "i18n/i18n.properties",
+			"supportedLocales": [
+				""
+			]
 		}
 	},
 	"sap.ui": {
 		"technology": "UI5",
-		"icons": {
-			"icon": "",
-			"favIcon": "",
-			"phone": "",
-			"phone@2": "",
-			"tablet": "",
-			"tablet@2": ""
-		},
 		"deviceTypes": {
 			"desktop": true,
 			"tablet": true,
@@ -48,103 +40,32 @@
 		}
 	},
 	"sap.ui5": {
-		"flexEnabled": true,
+		"rootView": {
+			"viewName": "za.co.bbbee.compliancereview.view.Main",
+			"type": "XML",
+			"async": true,
+			"id": "main"
+		},
 		"dependencies": {
 			"minUI5Version": "1.153.0",
 			"libs": {
 				"sap.m": {},
+				"sap.f": {},
 				"sap.ui.core": {},
-				"sap.fe.templates": {}
+				"sap.ui.layout": {}
 			}
 		},
 		"contentDensities": {
 			"compact": true,
 			"cozy": true
 		},
-		"models": {
-			"i18n": {
-				"type": "sap.ui.model.resource.ResourceModel",
-				"settings": {
-					"bundleName": "za.co.bbbee.compliancereview.i18n.i18n",
-					"supportedLocales": [
-						""
-					]
-				}
-			},
-			"": {
-				"dataSource": "mainService",
-				"preload": true,
-				"settings": {
-					"operationMode": "Server",
-					"autoExpandSelect": true,
-					"earlyRequests": true
-				}
-			},
-			"@i18n": {
-				"type": "sap.ui.model.resource.ResourceModel",
-				"uri": "i18n/i18n.properties",
-				"settings": {
-					"supportedLocales": [
-						""
-					]
-				}
-			}
-		},
+		"models": {},
 		"resources": {
-			"css": []
-		},
-		"routing": {
-			"config": {},
-			"routes": [
+			"css": [
 				{
-					"pattern": ":?query:",
-					"name": "CertificatesList",
-					"target": "CertificatesList"
-				},
-				{
-					"pattern": "Certificates({key}):?query:",
-					"name": "CertificatesObjectPage",
-					"target": "CertificatesObjectPage"
+					"uri": "style.css"
 				}
-			],
-			"targets": {
-				"CertificatesList": {
-					"type": "Component",
-					"id": "CertificatesList",
-					"name": "sap.fe.templates.ListReport",
-					"options": {
-						"settings": {
-							"contextPath": "/Certificates",
-							"variantManagement": "Page",
-							"navigation": {
-								"Certificates": {
-									"detail": {
-										"route": "CertificatesObjectPage"
-									}
-								}
-							},
-							"controlConfiguration": {
-								"@com.sap.vocabularies.UI.v1.LineItem": {
-									"tableSettings": {
-										"type": "ResponsiveTable"
-									}
-								}
-							}
-						}
-					}
-				},
-				"CertificatesObjectPage": {
-					"type": "Component",
-					"id": "CertificatesObjectPage",
-					"name": "sap.fe.templates.ObjectPage",
-					"options": {
-						"settings": {
-							"editableHeaderContent": false,
-							"contextPath": "/Certificates"
-						}
-					}
-				}
-			}
+			]
 		},
 		"flexBundle": false
 	},
@@ -152,9 +73,7 @@
 		"registrationIds": [],
 		"archeType": "transactional"
 	},
-	"sap.fe": {
-		"app": {
-			"enableLazyLoading": true
-		}
+	"sap.cloud": {
+		"service": "cc.bbbee.portal"
 	}
 }
