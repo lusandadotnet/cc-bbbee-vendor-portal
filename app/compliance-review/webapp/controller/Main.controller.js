@@ -188,6 +188,8 @@ sap.ui.define([
     },
 
     _showReview: async function (certificate) {
+      if (this._evidenceObjectUrl) URL.revokeObjectURL(this._evidenceObjectUrl);
+      this._evidenceObjectUrl = null;
       this._selectedCertificate = certificate;
       const supplier = certificate.supplier || {};
       const selected = Object.assign({}, certificate, {
@@ -231,30 +233,65 @@ sap.ui.define([
         } else if (!UUID_PATTERN.test(attachment.ID || "")) {
           throw new Error("The server returned an invalid attachment ID.");
         } else {
-          const documentUrl = `/compliance/Certificates(${certificate.ID})/attachments(ID=${attachment.ID})/content`;
-          this._model.setProperty("/documentUrl", documentUrl);
-          this._model.setProperty("/documentAvailable", true);
+          const contentUrl = `/compliance/Certificates(${certificate.ID})/attachments(ID=${attachment.ID})/content`;
           this._model.setProperty("/fileCaption", `${attachment.filename || "Uploaded evidence"} · ${attachment.mimeType || "unknown type"} · Scan: ${attachment.status || "unknown"}`);
           this._model.setProperty("/attachmentState", this._statusState(attachment.status));
+
           if (attachment.status !== "Clean") {
+            this._model.setProperty("/documentUrl", contentUrl);
+            this._model.setProperty("/documentAvailable", true);
             this._model.setProperty("/previewMessage", `The evidence scan status is ${attachment.status || "unknown"}. Approval is disabled until malware scanning reports Clean.`);
             this._model.setProperty("/previewMessageType", "Warning");
             this._model.setProperty("/canApproveCertificate", false);
-          } else if (attachment.mimeType === "application/pdf") {
-            this._model.setProperty("/previewPdf", true);
-            this._model.setProperty("/previewMessageVisible", false);
-            this._model.setProperty("/canApproveCertificate", true);
-          } else if (["image/png", "image/jpeg"].includes(attachment.mimeType)) {
-            this._model.setProperty("/previewImage", true);
+          } else if (["application/pdf", "image/png", "image/jpeg"].includes(attachment.mimeType)) {
+            const response = await fetch(contentUrl, {
+              credentials: "same-origin",
+              cache: "no-store"
+            });
+
+            if (!response.ok) {
+              const detail = await response.text().catch(() => "");
+              throw new Error(`Evidence content request failed (HTTP ${response.status})${detail ? `: ${detail.slice(0, 160)}` : ""}`);
+            }
+
+            const responseMimeType = (response.headers.get("content-type") || "")
+              .split(";")[0].trim().toLowerCase();
+
+            if (responseMimeType !== String(attachment.mimeType).toLowerCase()) {
+              throw new Error(`Evidence type mismatch: expected ${attachment.mimeType}, received ${responseMimeType || "unknown"}.`);
+            }
+
+            const sourceBlob = await response.blob();
+            if (!sourceBlob.size) {
+              throw new Error("The server returned an empty evidence document.");
+            }
+
+            this._evidenceObjectUrl = URL.createObjectURL(
+              new Blob([sourceBlob], { type: attachment.mimeType })
+            );
+
+            this._model.setProperty("/documentUrl", this._evidenceObjectUrl);
+            this._model.setProperty("/documentAvailable", true);
+
+            if (attachment.mimeType === "application/pdf") {
+              this._model.setProperty("/previewPdf", true);
+            } else {
+              this._model.setProperty("/previewImage", true);
+            }
+
             this._model.setProperty("/previewMessageVisible", false);
             this._model.setProperty("/canApproveCertificate", true);
           } else {
+            this._model.setProperty("/documentUrl", contentUrl);
+            this._model.setProperty("/documentAvailable", true);
             this._model.setProperty("/previewMessage", "The attachment is scan-clean, but this file type cannot be previewed here. Open the uploaded document in a new tab to inspect it.");
             this._model.setProperty("/previewMessageType", "Information");
             this._model.setProperty("/canApproveCertificate", true);
           }
         }
       } catch (error) {
+        this._model.setProperty("/documentUrl", "");
+        this._model.setProperty("/documentAvailable", false);
         this._model.setProperty("/fileCaption", "Evidence metadata unavailable");
         this._model.setProperty("/attachmentState", "Error");
         this._model.setProperty("/previewMessage", error.message);
@@ -298,7 +335,15 @@ sap.ui.define([
     onApproveCertificate: function () { this._decideCertificate("approveCertificate"); },
     onRejectCertificate: function () { this._decideCertificate("rejectCertificate"); },
     onRequestResubmission: function () { this._decideCertificate("requestResubmission"); },
-    onCloseReview: function () { this.byId("reviewDialog").close(); },
+    onCloseReview: function () {
+      this.byId("reviewDialog").close();
+      if (this._evidenceObjectUrl) URL.revokeObjectURL(this._evidenceObjectUrl);
+      this._evidenceObjectUrl = null;
+      this._model.setProperty("/documentUrl", "");
+      this._model.setProperty("/documentAvailable", false);
+      this._model.setProperty("/previewPdf", false);
+      this._model.setProperty("/previewImage", false);
+    },
 
     onApproveOnboarding: function (event) { this._openOnboardingDecision(event, "approve"); },
     onRejectOnboarding: function (event) { this._openOnboardingDecision(event, "reject"); },

@@ -49,7 +49,7 @@
         }
       },
       "attachments": {
-        "inline": "true"
+        "inline": true
       }
     },
     "model": [
