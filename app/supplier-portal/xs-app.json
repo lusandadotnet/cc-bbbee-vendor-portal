@@ -20,5 +20,6 @@
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     }
-  ]
+  ],
+  "welcomeFile": "/index.html"
 }

@@ -23,20 +23,20 @@
       "csrfProtection": true
     },
     {
-      "source": "^/vendor-portal/(.*)$",
-      "target": "/zacobbbeesupplierportal-1.0.0/$1",
+      "source": "^/vendor-portal/([^?]*)(\\?.*)?$",
+      "target": "/zacobbbeesupplierportal-1.0.0/$1$2",
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     },
     {
-      "source": "^/compliance-review/(.*)$",
-      "target": "/zacobbbeecompliancereview-0.0.1/$1",
+      "source": "^/compliance-review/([^?]*)(\\?.*)?$",
+      "target": "/zacobbbeecompliancereview-0.0.1/$1$2",
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     },
     {
-      "source": "^/(zacobbbeecompliancereview\\-0\\.0\\.1(?:/.*)?)$",
-      "target": "$1",
+      "source": "^/(zacobbbeecompliancereview\\-0\\.0\\.1(?:/[^?]*)?)(\\?.*)?$",
+      "target": "/$1$2",
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa",
       "scope": [
@@ -46,8 +46,8 @@
       ]
     },
     {
-      "source": "^/(zacobbbeesupplierportal\\-1\\.0\\.0(?:/.*)?)$",
-      "target": "$1",
+      "source": "^/(zacobbbeesupplierportal\\-1\\.0\\.0(?:/[^?]*)?)(\\?.*)?$",
+      "target": "/$1$2",
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa",
       "scope": [
@@ -56,8 +56,8 @@
       ]
     },
     {
-      "source": "^/(.*)$",
-      "target": "$1",
+      "source": "^/([^?]*)(\\?.*)?$",
+      "target": "/$1$2",
       "service": "html5-apps-repo-rt",
       "authenticationType": "xsuaa"
     }

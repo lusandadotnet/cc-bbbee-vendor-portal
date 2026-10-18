@@ -1,0 +1,65 @@
+{
+  "welcomeFile": "/vendor-portal/index.html",
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "source": "^/user-api/currentUser$",
+      "target": "/currentUser",
+      "service": "sap-approuter-userapi",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/supplier/(.*)$",
+      "target": "/supplier/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "csrfProtection": true
+    },
+    {
+      "source": "^/compliance/(.*)$",
+      "target": "/compliance/$1",
+      "destination": "srv-api",
+      "authenticationType": "xsuaa",
+      "csrfProtection": true
+    },
+    {
+      "source": "^/vendor-portal/(.*)$",
+      "target": "/zacobbbeesupplierportal-1.0.0/$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/compliance-review/(.*)$",
+      "target": "/zacobbbeecompliancereview-0.0.1/$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    },
+    {
+      "source": "^/(zacobbbeecompliancereview\\-0\\.0\\.1(?:/.*)?)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa",
+      "scope": [
+        "$XSAPPNAME.BEE_Compliance_Officer",
+        "$XSAPPNAME.BEE_System_Admin",
+        "$XSAPPNAME.ComplianceOfficer"
+      ]
+    },
+    {
+      "source": "^/(zacobbbeesupplierportal\\-1\\.0\\.0(?:/.*)?)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa",
+      "scope": [
+        "$XSAPPNAME.BEE_Supplier_User",
+        "$XSAPPNAME.BEE_System_Admin"
+      ]
+    },
+    {
+      "source": "^/(.*)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    }
+  ]
+}

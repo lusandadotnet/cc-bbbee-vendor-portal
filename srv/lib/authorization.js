@@ -137,7 +137,24 @@ export function registerCertificateAttachmentGuard(service) {
     if (isProduction() && !hasRole(req.user, 'BEE_Supplier_User', 'BEE_Compliance_Officer', 'BEE_System_Admin', 'ComplianceOfficer')) {
       return req.reject(403, 'A B-BBEE Supplier, Compliance Officer or System Administrator role is required for certificate attachments.');
     }
-    const parentKey = req.data?.up__ID ?? req.params?.[0]?.ID ?? req.params?.[0]?.id;
+    const requestPath =
+      req.http?.req?.originalUrl ??
+      req.http?.req?.url ??
+      req.path ??
+      '';
+
+    const pathMatch = String(requestPath).match(
+      /\/Certificates\((?:ID=)?([^)]*)\)\/attachments(?:\/|$|\()/i
+    );
+
+    const pathParentID = pathMatch?.[1]?.replace(/^['"]|['"]$/g, '');
+
+    const parentKey =
+      req.data?.up__ID ??
+      req.params?.find?.(param => param?.up__ID)?.up__ID ??
+      pathParentID ??
+      req.params?.[0]?.ID ??
+      req.params?.[0]?.id;
     if (!parentKey) return req.reject(400, 'The certificate parent ID is required for attachment operations.');
     const tx = cds.tx(req);
     const certificate = await tx.run(

@@ -24,7 +24,6 @@
     <f:header>
       <f:DynamicPageHeader pinnable="false">
         <VBox class="sapUiSmallMarginBottom">
-          <ObjectStatus text="Compliance work center" icon="sap-icon://shield" state="Information" />
           <Text text="Review clean supporting evidence before approving a certificate. Provide a reason when rejecting evidence or requesting corrections." class="sapUiTinyMarginTop" />
         </VBox>
       </f:DynamicPageHeader>

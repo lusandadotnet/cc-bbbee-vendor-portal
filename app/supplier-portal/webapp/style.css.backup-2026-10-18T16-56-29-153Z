@@ -1,0 +1,101 @@
+/* Keep the application viewport stable when content changes height. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html,
+body,
+body.sapUiBody {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.bbbeeDynamicPage {
+  min-height: calc(100vh - 3rem);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bbbeeContent {
+  box-sizing: border-box;
+  max-width: 100rem;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.bbbeeDynamicPage .sapFDynamicPageContentWrapper,
+.bbbeeDynamicPage .sapFDynamicPageContent,
+.bbbeeContent .sapMPanel,
+.bbbeeContent .sapMPanelContent,
+.bbbeeContent .sapUiForm,
+.bbbeeContent .sapUiFormResGrid,
+.bbbeeContent .sapUiFormResGridCont,
+.bbbeeContent .sapUiRespGrid {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bbbeeSupplierSummary {
+  border: 1px solid var(--sapGroup_ContentBorderColor);
+  border-radius: .5rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.bbbeeHint {
+  color: var(--sapTextColor);
+  opacity: .8;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bbbeeMatchRow {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bbbeeMatchRow .bbbeeHint {
+  box-sizing: border-box;
+  flex: 1 1 18rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.bbbeeSubtleText {
+  color: var(--sapContent_LabelColor);
+  font-size: .75rem;
+  overflow-wrap: anywhere;
+}
+
+.bbbeeEditor {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 599px) {
+  .bbbeeContent {
+    padding: .5rem !important;
+  }
+
+  .bbbeeEditor {
+    padding: .5rem !important;
+  }
+
+  .bbbeeHint {
+    margin-left: 0 !important;
+    display: block;
+  }
+
+  .bbbeeMatchRow .bbbeeHint {
+    flex: 1 1 100%;
+  }
+}

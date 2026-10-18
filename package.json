@@ -41,11 +41,15 @@
         "destinations": true,
         "html5-repo": true,
         "attachments": {
-          "kind": "db"
+          "kind": "db",
+          "inline": true
         },
         "malwareScanner": {
           "kind": "malwareScanner-mocked"
         }
+      },
+      "attachments": {
+        "inline": "true"
       }
     },
     "model": [

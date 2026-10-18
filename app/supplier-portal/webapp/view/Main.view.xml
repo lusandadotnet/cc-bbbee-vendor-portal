@@ -6,9 +6,9 @@
   xmlns:core="sap.ui.core"
   xmlns:unified="sap.ui.unified"
   controllerName="za.co.bbbee.supplierportal.controller.Main"
-  displayBlock="true">
+  height="100%" displayBlock="true">
   <f:ShellBar id="supplierShellBar" title="Supplier Workspace" showNavButton="false" showMenuButton="false" />
-  <f:DynamicPage id="supplierPage" class="bbbeeDynamicPage" toggleHeaderOnTitleClick="false">
+  <f:DynamicPage id="supplierPage" class="bbbeeDynamicPage" toggleHeaderOnTitleClick="false" preserveHeaderStateOnScroll="true">
     <f:title>
       <f:DynamicPageTitle>
         <f:heading>
@@ -25,7 +25,6 @@
     <f:header>
       <f:DynamicPageHeader pinnable="false">
         <VBox class="sapUiSmallMarginBottom">
-          <ObjectStatus text="Secure supplier workspace" icon="sap-icon://shield" state="Information" />
           <Text text="Link your business record, maintain current evidence, and submit certificates for compliance review." class="sapUiTinyMarginTop" />
         </VBox>
       </f:DynamicPageHeader>
@@ -46,7 +45,7 @@
               <Label text="CIPC registration number" />
               <Input id="registrationNumber" value="{state>/match/registrationNumber}" maxLength="20" placeholder="e.g. 2008/123456/07" />
               <Label text="" />
-              <HBox wrap="Wrap" alignItems="Center">
+              <HBox class="bbbeeMatchRow" wrap="Wrap" alignItems="Center">
                 <Button text="Match supplier" icon="sap-icon://person-placeholder" type="Emphasized" press="onMatchSupplier" enabled="{= !${state>/matching} }" />
                 <Text text="Provide at least one identifier: tax number or CIPC registration number." class="sapUiSmallMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom bbbeeHint" />
               </HBox>
