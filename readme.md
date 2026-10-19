@@ -13,8 +13,8 @@ SAP CAP Node.js application for supplier B-BBEE certificate onboarding, Azure Do
 
 ```bash
 npm ci
-cp .env.example .env
-# Edit .env with an Azure Document Intelligence endpoint and key if testing OCR.
+cp .env
+# Edit .env with Azure Document Intelligence endpoint and key to test.
 npm start
 ```
 
