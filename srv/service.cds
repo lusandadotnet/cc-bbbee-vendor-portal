@@ -116,7 +116,7 @@ service ComplianceService {
     @readonly
     entity ExpiryJobRuns as projection on db.ExpiryJobRuns;
 
-    // Demo-only view into the simulated external ERP state; read-only and admin guarded.
+    // demo only view into erp state
     @readonly
     entity MockBusinessPartners as projection on db.MockBusinessPartners;
 
