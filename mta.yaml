@@ -27,7 +27,7 @@ modules:
     build-parameters:
       builder: npm-ci
     provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      - name: srv-api 
         properties:
           srv-url: ${default-url}
     requires:
@@ -53,7 +53,7 @@ modules:
       - name: srv-api
         group: destinations
         properties:
-          name: srv-api # must be used in xs-app.json as well
+          name: srv-api 
           url: ~{srv-url}
           forwardAuthToken: true
       - name: cc-bbbee-portal-auth
