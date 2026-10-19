@@ -183,7 +183,6 @@ entity IntegrationOutbox : managed {
     lastError           : String(1000);
 }
 
-// Durable notifications log/outbox. Destination delivery is retried independently.
 entity NotificationEvents : managed {
     key idempotencyKey : String(255);
     supplier            : Association to one Suppliers not null;
@@ -213,7 +212,7 @@ entity ExpiryJobRuns : managed {
     errorMessage        : String(1000);
 }
 
-// Explicit simulation of the external S/4HANA Business Partner master for demos.
+// simulation of the external S/4HANA Business Partner master for demos.
 // This data is local to this CAP application and is NOT a real SAP ERP system.
 // It is only used when S4_BACKEND_MODE=mock.
 entity MockBusinessPartners : managed {
