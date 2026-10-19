@@ -98,8 +98,8 @@ async function matchSupplier(req) {
     return req.reject(409, error.message);
   }
 
-  // Legacy/local records without a BP ID are reconciled with S/4 before a supplier match is returned.
-  // A lookup failure is never treated as a confirmed match.
+
+  // a lookup is never treated as a match
   if (!supplier || !supplier.businessPartnerId) {
     try {
       s4Match = await findBusinessPartner({ taxNumber, registrationNumber });
@@ -141,8 +141,7 @@ async function matchSupplier(req) {
     };
   }
 
-  // Resolve identifiers against the released S/4HANA Business Partner API.
-  // A destination/network/API problem fails closed into the staging queue; it never fabricates a BP ID.
+  
   if (!s4Match) {
     try {
       s4Match = await findBusinessPartner({ taxNumber, registrationNumber });
