@@ -55,7 +55,7 @@ async function bytesFrom(value) {
     return Buffer.from(await value.arrayBuffer());
   }
 
-  // Support Node.js streams and async-iterable binary streams.
+  // support Node.js streams and async-iterable binary streams.
   if (value && typeof value[Symbol.asyncIterator] === 'function') {
     const chunks = [];
 
